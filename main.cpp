@@ -83,7 +83,7 @@ unsigned int oeis_db_size(const std::string &path)
     return oeis_db_size;
 }
 
-bool load_oeis_db(const std::string &path, SEQ_T **oeis_values, unsigned int *oeis_keys)
+bool load_oeis_db(const std::string &path, SEQ_INT **oeis_values, unsigned int *oeis_keys)
 {
     unsigned int i = 0;
     unsigned int err = 0;
@@ -98,7 +98,7 @@ bool load_oeis_db(const std::string &path, SEQ_T **oeis_values, unsigned int *oe
         set(oeis_keys, i, std::stoi(out[0].substr(1)));
         tokenize(out[1], ',', out);
         size_t s = out.size();
-        oeis_values[i] = new SEQ_T[s + 1];
+        oeis_values[i] = new SEQ_INT[s + 1];
 
         unsigned int e = 0;
         try
@@ -136,31 +136,32 @@ int main(int argc, char **argv)
 
     std::cout << "Loading db..." << std::endl;
     unsigned int oeis_db_s = oeis_db_size(path);
-    SEQ_T **oeis_values = new SEQ_T *[oeis_db_s];
+    SEQ_INT **oeis_values = new SEQ_INT *[oeis_db_s];
     unsigned int *oeis_keys = new unsigned int[oeis_db_s];
     if (!load_oeis_db(path, oeis_values, oeis_keys))
         return -1;
-    std::cout << "Loaded..." << std::endl;
-
-    unsigned int sequence_length = 9;
-    SEQ_T *t = new SEQ_T[sequence_length];
-    set(t, 0, sequence_length);
-    set(t, 1, 2);
-    set(t, 2, 3);
-    set(t, 3, 5);
-    set(t, 4, 7);
-    set(t, 5, 11);
-    set(t, 6, 13);
-    set(t, 7, 17);
-    set(t, 8, 19);
-    set(t, 9, 50);
-
-    std::cout << "Investigating..." << std::endl;
-    std::vector<unsigned int> oeis_indexes;
-    investigation(t, oeis_values, oeis_db_s);
 
     auto end = std::chrono::high_resolution_clock::now();
     double time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "Loaded in " << time_taken << " ms" << std::endl;
+
+    unsigned int sequence_length = 8;
+    SEQ_INT *t = new SEQ_INT[sequence_length];
+    set(t, 0, sequence_length);
+    set(t, 1, 0);
+    set(t, 2, 6);
+    set(t, 3, 30);
+    set(t, 4, 152);
+    set(t, 5, 512);
+    set(t, 6, 1332);
+    set(t, 7, 2976);
+    set(t, 8, 6070);
+
+    std::cout << "Investigating..." << std::endl;
+    start = std::chrono::high_resolution_clock::now();
+    investigation(t, oeis_values, oeis_db_s);
+    end = std::chrono::high_resolution_clock::now();
+    time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "completed in " << time_taken << "ms" << std::endl;
 
     return 0;
