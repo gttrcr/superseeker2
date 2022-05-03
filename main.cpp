@@ -8,7 +8,7 @@
 #include <chrono>
 #include <math.h>
 
-#include "sequence.h"
+#include "fraction.h"
 #include "investigation.h"
 
 inline bool oeis_db_exists(const std::string &path)
@@ -68,7 +68,7 @@ void tokenize(const std::string str, const char delim, std::vector<std::string> 
             out.push_back(s);
 }
 
-unsigned int oeis_db_size(const std::string &path)
+unsigned int get_oeis_db_size(const std::string &path)
 {
     unsigned int oeis_db_size = 0;
     std::ifstream input(path);
@@ -84,7 +84,7 @@ unsigned int oeis_db_size(const std::string &path)
     return oeis_db_size;
 }
 
-bool load_oeis_db(const std::string &path, sequence *oeis_values, sequence &oeis_keys)
+bool load_oeis_db(const std::string &path, fraction **oeis_values, fraction *oeis_keys, const unsigned int &oeis_db_size)
 {
     unsigned int i = 0;
     std::ifstream input(path);
@@ -96,23 +96,19 @@ bool load_oeis_db(const std::string &path, sequence *oeis_values, sequence &oeis
 
         tokenize(line, ' ', out);
         fraction f(std::stoi(out[0].substr(1)));
-        oeis_keys.set(i, f);
+        *(oeis_keys + i) = f;
         tokenize(out[1], ',', out);
         size_t s = out.size();
-        //(oeis_values + i); //sequence(s);
+        *(oeis_values + i) = new fraction[s + 1];
+        fraction sf((unsigned int)s);
+        *(*(oeis_values + i) + 0) = sf;
 
-        unsigned int e = 0;
-        try
-        {
-            for (; e < s; e++)
-                (oeis_values + i)->set(e, std::stoll(out[e]));
-        }
-        catch (...)
-        {
-            // std::cout << "cannot convert completely " << get(oeis_keys, i) << " (" << e << "/" << s << ") values " << out[out.size() - 1] << std::endl;
-        }
+        for (unsigned int e = 0; e < s; e++)
+            *(*(oeis_values + i) + (e + 1)) = fraction(out[e]);
 
         i++;
+        if (i % 10000 == 0)
+            std::cout << (float)i * 100.0 / oeis_db_size << "%" << std::endl;
     }
 
     input.close();
@@ -130,31 +126,33 @@ int main(int argc, char **argv)
     //     return -1;
 
     std::cout << "Loading db..." << std::endl;
-    unsigned int oeis_db_s = oeis_db_size(path);
-    sequence *oeis_values = new sequence[oeis_db_s];
-    sequence oeis_keys(oeis_db_s);
-    if (!load_oeis_db(path, oeis_values, oeis_keys))
+    unsigned int oeis_db_size = get_oeis_db_size(path);
+    fraction **oeis_values = new fraction *[oeis_db_size];
+    fraction *oeis_keys = new fraction[oeis_db_size];
+    if (!load_oeis_db(path, oeis_values, oeis_keys, oeis_db_size))
         return -1;
 
     auto end = std::chrono::high_resolution_clock::now();
     double time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "Loaded in " << time_taken << " ms" << std::endl;
 
-    unsigned int sequence_length = 8;
-    SEQ_INT *t = new SEQ_INT[sequence_length];
-    set(t, 0, sequence_length);
-    set(t, 1, 0);
-    set(t, 2, 6);
-    set(t, 3, 30);
-    set(t, 4, 152);
-    set(t, 5, 512);
-    set(t, 6, 1332);
-    set(t, 7, 2976);
-    set(t, 8, 6070);
+    unsigned int sequence_length = 10;
+    fraction *t = new fraction[sequence_length + 1];
+    *(t + 0) = fraction(sequence_length);
+    *(t + 1) = fraction(2);
+    *(t + 2) = fraction(3);
+    *(t + 3) = fraction(5);
+    *(t + 4) = fraction(7);
+    *(t + 5) = fraction(11);
+    *(t + 6) = fraction(13);
+    *(t + 7) = fraction(17);
+    *(t + 8) = fraction(19);
+    *(t + 9) = fraction(23);
+    *(t + 10) = fraction(29);
 
     std::cout << "Investigating..." << std::endl;
     start = std::chrono::high_resolution_clock::now();
-    // investigation(t, oeis_values, oeis_db_s);
+    investigation(t, oeis_values, oeis_db_size);
     end = std::chrono::high_resolution_clock::now();
     time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "completed in " << time_taken << "ms" << std::endl;
