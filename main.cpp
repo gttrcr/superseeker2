@@ -8,6 +8,7 @@
 #include <chrono>
 #include <math.h>
 
+#include "sequence.h"
 #include "investigation.h"
 
 inline bool oeis_db_exists(const std::string &path)
@@ -83,10 +84,9 @@ unsigned int oeis_db_size(const std::string &path)
     return oeis_db_size;
 }
 
-bool load_oeis_db(const std::string &path, SEQ_INT **oeis_values, unsigned int *oeis_keys)
+bool load_oeis_db(const std::string &path, sequence *oeis_values, sequence &oeis_keys)
 {
     unsigned int i = 0;
-    unsigned int err = 0;
     std::ifstream input(path);
     std::vector<std::string> out;
     for (std::string line; getline(input, line);)
@@ -95,32 +95,27 @@ bool load_oeis_db(const std::string &path, SEQ_INT **oeis_values, unsigned int *
             continue;
 
         tokenize(line, ' ', out);
-        set(oeis_keys, i, std::stoi(out[0].substr(1)));
+        fraction f(std::stoi(out[0].substr(1)));
+        oeis_keys.set(i, f);
         tokenize(out[1], ',', out);
         size_t s = out.size();
-        oeis_values[i] = new SEQ_INT[s + 1];
+        //(oeis_values + i); //sequence(s);
 
         unsigned int e = 0;
         try
         {
             for (; e < s; e++)
-                set(oeis_values, i, e + 1, std::stoll(out[e]));
+                (oeis_values + i)->set(e, std::stoll(out[e]));
         }
         catch (...)
         {
             // std::cout << "cannot convert completely " << get(oeis_keys, i) << " (" << e << "/" << s << ") values " << out[out.size() - 1] << std::endl;
-            err++;
         }
-
-        set(oeis_values, i, 0, e);
 
         i++;
     }
 
     input.close();
-
-    if (err != 0)
-        std::cout << "cannot convert completely oeis db (" << i - err << "/" << i << ")" << std::endl;
 
     return true;
 }
@@ -136,8 +131,8 @@ int main(int argc, char **argv)
 
     std::cout << "Loading db..." << std::endl;
     unsigned int oeis_db_s = oeis_db_size(path);
-    SEQ_INT **oeis_values = new SEQ_INT *[oeis_db_s];
-    unsigned int *oeis_keys = new unsigned int[oeis_db_s];
+    sequence *oeis_values = new sequence[oeis_db_s];
+    sequence oeis_keys(oeis_db_s);
     if (!load_oeis_db(path, oeis_values, oeis_keys))
         return -1;
 
@@ -159,7 +154,7 @@ int main(int argc, char **argv)
 
     std::cout << "Investigating..." << std::endl;
     start = std::chrono::high_resolution_clock::now();
-    investigation(t, oeis_values, oeis_db_s);
+    // investigation(t, oeis_values, oeis_db_s);
     end = std::chrono::high_resolution_clock::now();
     time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "completed in " << time_taken << "ms" << std::endl;

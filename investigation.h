@@ -3,9 +3,6 @@
 #include <thread>
 #include <tuple>
 
-typedef long long int SEQ_INT;
-typedef float SEQ_F;
-
 void set(SEQ_INT **input, unsigned int seq, unsigned int pos, SEQ_INT val)
 {
     *(*(input + seq) + pos) = val;
