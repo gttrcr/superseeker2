@@ -39,6 +39,13 @@ public:
         return *this;
     }
 
+    fraction &operator/=(const fraction &rhs)
+    {
+        _den = _den * rhs._num;
+        _num = _num * rhs._den;
+        return *this;
+    }
+
     fraction &operator-=(fraction const &rhs)
     {
         _num = _num * rhs._den - rhs._num * _den;
@@ -46,15 +53,40 @@ public:
         return *this;
     }
 
-    std::string print()
+    std::string print() const
     {
         return _num.to_string() + (_den == 1 ? "" : "/" + _den.to_string());
     }
 };
 
+BigInt gcd(BigInt num1, BigInt num2)
+{
+    BigInt ret;
+    for (int i = 1; i <= num1 && i <= num2; i++)
+    {
+        if (num1 % i == 0 && num2 % i == 0)
+        {
+            ret = i;
+        }
+    }
+
+    return ret;
+}
+
+fraction simplify(const fraction &f)
+{
+    BigInt u = gcd(f.num(), f.den());
+    BigInt fnum = (u != 0) ? f.num() / u : f.num();
+    BigInt fden = (u != 0) ? f.den() / u : f.den();
+
+    return fraction(fnum, fden);
+}
+
 bool operator==(const fraction &lhs, const fraction &rhs)
 {
-    return lhs.num() == rhs.num() && lhs.den() == rhs.den();
+    fraction lhssimplify = simplify(lhs);
+    fraction rhssimplify = simplify(rhs);
+    return lhssimplify.num() == rhssimplify.num() && lhssimplify.den() == rhssimplify.den();
 }
 
 bool operator!=(const fraction &lhs, const fraction &rhs)
@@ -70,4 +102,9 @@ fraction operator-(fraction f1, const fraction &f2)
 fraction operator*(fraction lhs, const fraction &rhs)
 {
     return lhs *= rhs;
+}
+
+fraction operator/(fraction lhs, const fraction &rhs)
+{
+    return lhs /= rhs;
 }

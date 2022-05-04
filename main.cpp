@@ -6,7 +6,6 @@
 #include <vector>
 #include <sstream>
 #include <chrono>
-#include <math.h>
 
 #include "fraction.h"
 #include "investigation.h"
@@ -84,7 +83,7 @@ unsigned int get_oeis_db_size(const std::string &path)
     return oeis_db_size;
 }
 
-bool load_oeis_db(const std::string &path, fraction **oeis_values, fraction *oeis_keys, const unsigned int &oeis_db_size)
+bool load_oeis_db(const std::string &path, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
     unsigned int i = 0;
     std::ifstream input(path);
@@ -94,9 +93,11 @@ bool load_oeis_db(const std::string &path, fraction **oeis_values, fraction *oei
         if (line[0] == '#')
             continue;
 
+        if (i % 10000 == 0)
+            std::cout << (float)i * 100.0 / oeis_db_size << "%" << std::endl;
+
         tokenize(line, ' ', out);
-        fraction f(std::stoi(out[0].substr(1)));
-        *(oeis_keys + i) = f;
+        *(oeis_keys + i) = std::stoi(out[0].substr(1));
         tokenize(out[1], ',', out);
         size_t s = out.size();
         *(oeis_values + i) = new fraction[s + 1];
@@ -105,10 +106,7 @@ bool load_oeis_db(const std::string &path, fraction **oeis_values, fraction *oei
 
         for (unsigned int e = 0; e < s; e++)
             *(*(oeis_values + i) + (e + 1)) = fraction(out[e]);
-
         i++;
-        if (i % 10000 == 0)
-            std::cout << (float)i * 100.0 / oeis_db_size << "%" << std::endl;
     }
 
     input.close();
@@ -128,7 +126,7 @@ int main(int argc, char **argv)
     std::cout << "Loading db..." << std::endl;
     unsigned int oeis_db_size = get_oeis_db_size(path);
     fraction **oeis_values = new fraction *[oeis_db_size];
-    fraction *oeis_keys = new fraction[oeis_db_size];
+    unsigned int *oeis_keys = new unsigned int[oeis_db_size];
     if (!load_oeis_db(path, oeis_values, oeis_keys, oeis_db_size))
         return -1;
 
@@ -152,7 +150,7 @@ int main(int argc, char **argv)
 
     std::cout << "Investigating..." << std::endl;
     start = std::chrono::high_resolution_clock::now();
-    investigation(t, oeis_values, oeis_db_size);
+    investigation(t, oeis_values, oeis_keys, oeis_db_size);
     end = std::chrono::high_resolution_clock::now();
     time_taken = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "completed in " << time_taken << "ms" << std::endl;

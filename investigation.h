@@ -1,13 +1,15 @@
 #pragma once
 
 #include <thread>
-#include <future>
+#include <mutex>
 #include <map>
 
-std::vector<unsigned int> simple_search_test(fraction *t, fraction **oeis_values, const unsigned int &oeis_db_size)
+#include "utils.h"
+
+std::vector<unsigned int> simple_search_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
     std::vector<unsigned int> ret;
-    BigInt t_length = (t + 0)->num();
+    const BigInt t_length = (t + 0)->num();
     for (unsigned int i = 0; i < oeis_db_size; i++)
     {
         fraction *u = *(oeis_values + i);
@@ -21,7 +23,7 @@ std::vector<unsigned int> simple_search_test(fraction *t, fraction **oeis_values
                 br = true;
         }
         if (!br)
-            ret.push_back(i);
+            ret.push_back(*(oeis_keys + i));
     }
 
     return ret;
@@ -87,10 +89,10 @@ std::vector<unsigned int> simple_search_test(fraction *t, fraction **oeis_values
 //     std::cout << "product of two sequences ended " << product_of_two_sequences_result.size() << " pairs of sequences found" << std::endl;
 // }
 
-std::map<unsigned int, fraction> u_plus_d_test(fraction *t, fraction **oeis_values, const unsigned int &oeis_db_size)
+std::map<unsigned int, fraction> u_plus_d_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
     std::map<unsigned int, fraction> ret;
-    BigInt t_length = (t + 0)->num();
+    const BigInt t_length = (t + 0)->num();
     for (unsigned int i = 0; i < oeis_db_size; i++)
     {
         fraction *u = *(oeis_values + i);
@@ -106,91 +108,41 @@ std::map<unsigned int, fraction> u_plus_d_test(fraction *t, fraction **oeis_valu
                 br = true;
         }
         if (!br)
-            ret[i] = d_tmp;
+            ret[*(oeis_keys + i)] = d_tmp;
     }
 
     return ret;
 }
 
-// std::vector<std::tuple<SEQ_INT, SEQ_F, SEQ_INT, SEQ_INT, SEQ_INT, unsigned int>> u_times_b_result;
-// void u_times_b(SEQ_INT *t, SEQ_INT **oeis_values, const unsigned int &oeis_db_s)
-//{
-//     std::cout << "u times b started" << std::endl;
-//     const SEQ_INT t_length = get(t, 0);
-//     for (unsigned int i = 0; i < oeis_db_s; i++)
-//     {
-//         SEQ_INT *u = *(oeis_values + i);
-//         if (get(u, 0) < t_length)
-//             continue;
-//
-//         SEQ_INT a = 1;
-//         SEQ_F b = 1;
-//         SEQ_INT c = 1;
-//         SEQ_INT d = 0;
-//         SEQ_INT e = 1;
-//
-//         bool br = false;
-//         if (get(u, 1, a, b, c, d, e) == 0)
-//             continue;
-//         const unsigned int t_length = get(t, 0);
-//         SEQ_F b_tmp = get(t, 1) / get(u, 1, a, b, c, d, e);
-//         for (unsigned int n = 2; n < t_length && !br; n++)
-//         {
-//             if (get(u, n, a, 1, c, d, e) == 0)
-//                 br = true;
-//             b = (SEQ_F)get(t, n) / (SEQ_F)get(u, n, a, 1, c, d, e);
-//             if (b != 0)
-//             {
-//                 if (b_tmp != b)
-//                     br = true;
-//             }
-//         }
-//         if (!br)
-//             u_times_b_result.push_back(std::make_tuple(a, b, c, d, e, i));
-//     }
-//
-//     std::cout << "u times b ended " << u_times_b_result.size() << " sequences found" << std::endl;
-// }
-//
-//   std::vector<std::tuple<SEQ_INT, SEQ_F, SEQ_INT, SEQ_INT, SEQ_INT, unsigned int>> u_times_b_plus_d_result;
-//   void u_times_b_plus_d(SEQ_INT *t, SEQ_INT **oeis_values, const unsigned int &oeis_db_s)
-//{
-//       std::cout << "u time b plus d started" << std::endl;
-//       const SEQ_INT t_length = get(t, 0);
-//       for (unsigned int i = 0; i < oeis_db_s; i++)
-//       {
-//           SEQ_INT *u = *(oeis_values + i);
-//           if (get(u, 0) < t_length)
-//               continue;
-//
-//           SEQ_INT a = 1;
-//           SEQ_F b = 1;
-//           SEQ_INT c = 1;
-//           SEQ_INT d = 0;
-//           SEQ_INT e = 1;
-//
-//           bool br = false;
-//           if (get(u, 1, a, b, c, d, e) == 0)
-//               continue;
-//           const unsigned int t_length = get(t, 0);
-//           SEQ_F b_tmp = get(t, 1) / get(u, 1, a, b, c, d, e);
-//           for (unsigned int n = 2; n < t_length && !br; n++)
-//           {
-//               if (get(u, n, a, 1, c, d, e) == 0)
-//                   br = true;
-//               b = (SEQ_F)get(t, n) / (SEQ_F)get(u, n, a, 1, c, d, e);
-//               if (b != 0)
-//               {
-//                   if (b_tmp != b)
-//                       br = true;
-//               }
-//           }
-//           if (!br)
-//               u_times_b_plus_d_result.push_back(std::make_tuple(a, b, c, d, e, i));
-//       }
-//
-//       std::cout << "u time b plus d started " << u_times_b_plus_d_result.size() << " sequences found" << std::endl;
-//   }
+std::map<unsigned int, fraction> u_times_b_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+{
+    std::map<unsigned int, fraction> ret;
+    const BigInt t_length = (t + 0)->num();
+    for (unsigned int i = 0; i < oeis_db_size; i++)
+    {
+        fraction *u = *(oeis_values + i);
+        if ((u + 0)->num() < t_length)
+            continue;
+
+        bool br = false;
+        if (*(u + 1) == 0)
+            continue;
+
+        fraction b_tmp = *(t + 1) / *(u + 1);
+        for (unsigned int n = 2; n < t_length && !br; n++)
+        {
+            if (*(u + n) == 0)
+                br = true;
+            fraction b = *(t + n) / *(u + n);
+            if (b_tmp != b)
+                br = true;
+        }
+        if (!br)
+            ret[*(oeis_keys + i)] = b_tmp;
+    }
+
+    return ret;
+}
 
 std::mutex print_mtx;
 void print_results(std::vector<unsigned int> &res, const std::string &title = "")
@@ -204,10 +156,8 @@ void print_results(std::vector<unsigned int> &res, const std::string &title = ""
 void print_results(std::map<unsigned int, fraction> &res, const std::string &title = "")
 {
     print_mtx.lock();
-    std::cout << res.at(0).print() << std::endl;
-    for (unsigned int i = 0; i < res.size(); i++)
-        if (res.find(i) != res.end())
-            std::cout << title << ": seq " << i << " d=" << res[i].print() << std::endl;
+    for (const auto &pair : res)
+        std::cout << title << ": seq " << pair.first << " d=" << pair.second.print() << std::endl;
     print_mtx.unlock();
 }
 
@@ -217,21 +167,27 @@ enum tests
     u_plus_d,
 };
 
-void investigation(fraction *t, fraction **oeis_values, const unsigned int &oeis_db_size, std::vector<tests> filter_by_tests = {})
+void investigation(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size, std::vector<tests> filter_by_tests = {})
 {
     std::vector<std::thread> pool;
-    pool.push_back(std::thread([t, oeis_values, oeis_db_size]()
+    pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
                                    std::cout<<"simple_search started"<<std::endl;
-                                   std::vector<unsigned int> res = simple_search_test(t, oeis_values, oeis_db_size);
+                                   std::vector<unsigned int> res = simple_search_test(t, oeis_values, oeis_keys, oeis_db_size);
                                    std::cout<<"simple_search ended. Found "<<res.size()<<" results"<<std::endl;
                                    print_results(res, "simple_search"); }));
-    pool.push_back(std::thread([t, oeis_values, oeis_db_size]()
+    pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
                                    std::cout<<"u_plus_d started"<<std::endl;
-                                   std::map<unsigned int, fraction> res = u_plus_d_test(t, oeis_values, oeis_db_size);
+                                   std::map<unsigned int, fraction> res = u_plus_d_test(t, oeis_values, oeis_keys, oeis_db_size);
                                    std::cout<<"u_plus_d ended. Found "<<res.size()<<" results"<<std::endl;
                                    print_results(res, "u_plus_d"); }));
+    pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
+                               {
+                                   std::cout<<"u_times_b started"<<std::endl;
+                                   std::map<unsigned int, fraction> res = u_times_b_test(t, oeis_values, oeis_keys, oeis_db_size);
+                                   std::cout<<"u_times_b ended. Found "<<res.size()<<" results"<<std::endl;
+                                   print_results(res, "u_times_b"); }));
 
     for (unsigned int i = 0; i < pool.size(); i++)
         pool[i].join();
