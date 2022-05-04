@@ -144,6 +144,36 @@ std::map<unsigned int, fraction> u_times_b_test(fraction *t, fraction **oeis_val
     return ret;
 }
 
+std::vector<std::tuple<unsigned int, fraction, fraction>> u_times_b_plus_d_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+{
+    std::vector<std::tuple<unsigned int, fraction, fraction>> ret;
+    const BigInt t_length = (t + 0)->num();
+    fraction *diff = new fraction[t_length.to_int() + 1];
+    *(diff + 0) = t_length;
+    for (unsigned int i = 0; i < oeis_db_size; i++)
+    {
+        fraction *u = *(oeis_values + i);
+        if ((u + 0)->num() < t_length)
+            continue;
+
+        for (unsigned int l = 1; l <= t_length; l++)
+            *(diff + l) = *(u + l) - *(t + l);
+
+        bool br = false;
+        fraction m_tmp = *(diff + 2) - *(diff + 1);
+        for (unsigned int n = 3; n <= t_length && !br; n++)
+        {
+            fraction m = (*(diff + n) - *(diff + (n - 1)));
+            if (m_tmp != m)
+                br = true;
+        }
+        if (!br)
+            ret.push_back(std::make_tuple(*(oeis_keys + i), m_tmp, *(diff + 1) - m_tmp));
+    }
+
+    return ret;
+}
+
 std::mutex print_mtx;
 void print_results(std::vector<unsigned int> &res, const std::string &title = "")
 {
@@ -172,22 +202,27 @@ void investigation(fraction *t, fraction **oeis_values, unsigned int *oeis_keys,
     std::vector<std::thread> pool;
     pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
-                                   std::cout<<"simple_search started"<<std::endl;
+                                   std::cout<<"simple_search_test started"<<std::endl;
                                    std::vector<unsigned int> res = simple_search_test(t, oeis_values, oeis_keys, oeis_db_size);
-                                   std::cout<<"simple_search ended. Found "<<res.size()<<" results"<<std::endl;
-                                   print_results(res, "simple_search"); }));
+                                   std::cout<<"simple_search_test ended. Found "<<res.size()<<" results"<<std::endl;
+                                   print_results(res, "simple_search_test"); }));
     pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
-                                   std::cout<<"u_plus_d started"<<std::endl;
+                                   std::cout<<"u_plus_d_test started"<<std::endl;
                                    std::map<unsigned int, fraction> res = u_plus_d_test(t, oeis_values, oeis_keys, oeis_db_size);
-                                   std::cout<<"u_plus_d ended. Found "<<res.size()<<" results"<<std::endl;
-                                   print_results(res, "u_plus_d"); }));
+                                   std::cout<<"u_plus_d_test ended. Found "<<res.size()<<" results"<<std::endl;
+                                   print_results(res, "u_plus_d_test"); }));
     pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
-                                   std::cout<<"u_times_b started"<<std::endl;
+                                   std::cout<<"u_times_b_test started"<<std::endl;
                                    std::map<unsigned int, fraction> res = u_times_b_test(t, oeis_values, oeis_keys, oeis_db_size);
-                                   std::cout<<"u_times_b ended. Found "<<res.size()<<" results"<<std::endl;
-                                   print_results(res, "u_times_b"); }));
+                                   std::cout<<"u_times_b_test ended. Found "<<res.size()<<" results"<<std::endl;
+                                   print_results(res, "u_times_b_test"); }));
+    pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
+                               {
+        std::cout << "u_times_b_plus_d_test started" << std::endl;
+        std::vector<std::tuple<unsigned int, fraction, fraction>> res = u_times_b_plus_d_test(t, oeis_values, oeis_keys, oeis_db_size);
+        std::cout << "u_times_b_plus_d_test ended. Found " << res.size() << " results" << std::endl; }));
 
     for (unsigned int i = 0; i < pool.size(); i++)
         pool[i].join();
