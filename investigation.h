@@ -6,9 +6,11 @@
 
 #include "utils.h"
 
-std::vector<unsigned int> simple_search_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+typedef std::vector<std::tuple<unsigned int, std::vector<fraction>>> out_type;
+
+out_type simple_search_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
-    std::vector<unsigned int> ret;
+    out_type ret;
     const BigInt t_length = (t + 0)->num();
     for (unsigned int i = 0; i < oeis_db_size; i++)
     {
@@ -23,7 +25,10 @@ std::vector<unsigned int> simple_search_test(fraction *t, fraction **oeis_values
                 br = true;
         }
         if (!br)
-            ret.push_back(*(oeis_keys + i));
+        {
+            std::vector<fraction> inner = {fraction(1)};
+            ret.push_back(std::make_tuple(*(oeis_keys + i), inner));
+        }
     }
 
     return ret;
@@ -89,9 +94,9 @@ std::vector<unsigned int> simple_search_test(fraction *t, fraction **oeis_values
 //     std::cout << "product of two sequences ended " << product_of_two_sequences_result.size() << " pairs of sequences found" << std::endl;
 // }
 
-std::map<unsigned int, fraction> u_plus_d_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+out_type u_plus_d_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
-    std::map<unsigned int, fraction> ret;
+    out_type ret;
     const BigInt t_length = (t + 0)->num();
     for (unsigned int i = 0; i < oeis_db_size; i++)
     {
@@ -108,15 +113,18 @@ std::map<unsigned int, fraction> u_plus_d_test(fraction *t, fraction **oeis_valu
                 br = true;
         }
         if (!br)
-            ret[*(oeis_keys + i)] = d_tmp;
+        {
+            std::vector<fraction> inner = {d_tmp};
+            ret.push_back(std::make_tuple(*(oeis_keys + i), inner));
+        }
     }
 
     return ret;
 }
 
-std::map<unsigned int, fraction> u_times_b_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+out_type u_times_b_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
-    std::map<unsigned int, fraction> ret;
+    out_type ret;
     const BigInt t_length = (t + 0)->num();
     for (unsigned int i = 0; i < oeis_db_size; i++)
     {
@@ -138,18 +146,21 @@ std::map<unsigned int, fraction> u_times_b_test(fraction *t, fraction **oeis_val
                 br = true;
         }
         if (!br)
-            ret[*(oeis_keys + i)] = b_tmp;
+        {
+            std::vector<fraction> inner = {b_tmp};
+            ret.push_back(std::make_tuple(*(oeis_keys + i), inner));
+        }
     }
 
     return ret;
 }
 
-std::vector<std::tuple<unsigned int, fraction, fraction>> u_times_b_plus_d_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+out_type u_times_b_plus_d_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
-    std::vector<std::tuple<unsigned int, fraction, fraction>> ret;
+    out_type ret;
     const BigInt t_length = (t + 0)->num();
-    fraction *diff = new fraction[t_length.to_int() + 1];
-    *(diff + 0) = t_length;
+    fraction *d = new fraction[t_length.to_int() + 1];
+    *(d + 0) = t_length;
     for (unsigned int i = 0; i < oeis_db_size; i++)
     {
         fraction *u = *(oeis_values + i);
@@ -157,38 +168,36 @@ std::vector<std::tuple<unsigned int, fraction, fraction>> u_times_b_plus_d_test(
             continue;
 
         for (unsigned int l = 1; l <= t_length; l++)
-            *(diff + l) = *(u + l) - *(t + l);
+            *(d + l) = *(u + l) - *(t + l);
 
         bool br = false;
-        fraction m_tmp = *(diff + 2) - *(diff + 1);
+        fraction m_tmp = *(d + 2) - *(d + 1);
         for (unsigned int n = 3; n <= t_length && !br; n++)
         {
-            fraction m = (*(diff + n) - *(diff + (n - 1)));
+            fraction m = (*(d + n) - *(d + (n - 1)));
             if (m_tmp != m)
                 br = true;
         }
         if (!br)
-            ret.push_back(std::make_tuple(*(oeis_keys + i), m_tmp, *(diff + 1) - m_tmp));
+        {
+            std::vector<fraction> inner = {m_tmp, *(d + 1) - m_tmp};
+            ret.push_back(std::make_tuple(*(oeis_keys + i), inner));
+        }
     }
 
     return ret;
 }
 
-std::mutex print_mtx;
-void print_results(std::vector<unsigned int> &res, const std::string &title = "")
+void print(out_type &v, const std::string &title = "")
 {
-    print_mtx.lock();
-    for (unsigned int i = 0; i < res.size(); i++)
-        std::cout << title << ": seq " << res[i] << std::endl;
-    print_mtx.unlock();
-}
-
-void print_results(std::map<unsigned int, fraction> &res, const std::string &title = "")
-{
-    print_mtx.lock();
-    for (const auto &pair : res)
-        std::cout << title << ": seq " << pair.first << " d=" << pair.second.print() << std::endl;
-    print_mtx.unlock();
+    for (unsigned int i = 0; i < v.size(); i++)
+    {
+        std::cout << title << " " << std::get<0>(v[i]) << " ";
+        std::vector<fraction> one = std::get<1>(v[i]);
+        for (unsigned int j = 0; j < one.size(); j++)
+            std::cout << one[j].print() << " ";
+        std::cout << std::endl;
+    }
 }
 
 enum tests
@@ -202,27 +211,28 @@ void investigation(fraction *t, fraction **oeis_values, unsigned int *oeis_keys,
     std::vector<std::thread> pool;
     pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
-                                   std::cout<<"simple_search_test started"<<std::endl;
-                                   std::vector<unsigned int> res = simple_search_test(t, oeis_values, oeis_keys, oeis_db_size);
-                                   std::cout<<"simple_search_test ended. Found "<<res.size()<<" results"<<std::endl;
-                                   print_results(res, "simple_search_test"); }));
+                                    std::cout<<"simple_search_test started"<<std::endl;
+                                    out_type res = simple_search_test(t, oeis_values, oeis_keys, oeis_db_size);
+                                    std::cout<<"simple_search_test ended. Found "<<res.size()<<" results"<<std::endl;
+                                    print(res, "simple_search_test"); }));
     pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
                                    std::cout<<"u_plus_d_test started"<<std::endl;
-                                   std::map<unsigned int, fraction> res = u_plus_d_test(t, oeis_values, oeis_keys, oeis_db_size);
+                                   out_type res = u_plus_d_test(t, oeis_values, oeis_keys, oeis_db_size);
                                    std::cout<<"u_plus_d_test ended. Found "<<res.size()<<" results"<<std::endl;
-                                   print_results(res, "u_plus_d_test"); }));
+                                   print(res, "u_plus_d_test"); }));
     pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
-                                   std::cout<<"u_times_b_test started"<<std::endl;
-                                   std::map<unsigned int, fraction> res = u_times_b_test(t, oeis_values, oeis_keys, oeis_db_size);
-                                   std::cout<<"u_times_b_test ended. Found "<<res.size()<<" results"<<std::endl;
-                                   print_results(res, "u_times_b_test"); }));
+                                    std::cout<<"u_times_b_test started"<<std::endl;
+                                    out_type res = u_times_b_test(t, oeis_values, oeis_keys, oeis_db_size);
+                                    std::cout<<"u_times_b_test ended. Found "<<res.size()<<" results"<<std::endl;
+                                    print(res, "u_times_b_test"); }));
     pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
                                {
-        std::cout << "u_times_b_plus_d_test started" << std::endl;
-        std::vector<std::tuple<unsigned int, fraction, fraction>> res = u_times_b_plus_d_test(t, oeis_values, oeis_keys, oeis_db_size);
-        std::cout << "u_times_b_plus_d_test ended. Found " << res.size() << " results" << std::endl; }));
+                                    std::cout << "u_times_b_plus_d_test started" << std::endl;
+                                    out_type res = u_times_b_plus_d_test(t, oeis_values, oeis_keys, oeis_db_size);
+                                    std::cout << "u_times_b_plus_d_test ended. Found " << res.size() << " results" << std::endl;
+                                    print(res, "u_times_b_plus_d_test"); }));
 
     for (unsigned int i = 0; i < pool.size(); i++)
         pool[i].join();
