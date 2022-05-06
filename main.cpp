@@ -137,16 +137,16 @@ int main(int argc, char **argv)
     unsigned int sequence_length = 10;
     fraction *t = new fraction[sequence_length + 1];
     *(t + 0) = fraction(sequence_length);
-    *(t + 1) = fraction(2);
-    *(t + 2) = fraction(3);
-    *(t + 3) = fraction(5);
-    *(t + 4) = fraction(7);
-    *(t + 5) = fraction(11);
-    *(t + 6) = fraction(13);
-    *(t + 7) = fraction(17);
-    *(t + 8) = fraction(19);
-    *(t + 9) = fraction(23);
-    *(t + 10) = fraction(29);
+    *(t + 1) = fraction(1234 + 456 * 2);
+    *(t + 2) = fraction(1234 + 456 * 3);
+    *(t + 3) = fraction(1234 + 456 * 5);
+    *(t + 4) = fraction(1234 + 456 * 7);
+    *(t + 5) = fraction(1234 + 456 * 11);
+    *(t + 6) = fraction(1234 + 456 * 13);
+    *(t + 7) = fraction(1234 + 456 * 17);
+    *(t + 8) = fraction(1234 + 456 * 19);
+    *(t + 9) = fraction(1234 + 456 * 23);
+    *(t + 10) = fraction(1234 + 456 * 29);
 
     std::cout << "Investigating..." << std::endl;
     start = std::chrono::high_resolution_clock::now();

@@ -77,8 +77,8 @@ public:
         BigInt u = gcd();
         BigInt fnum = (u != 0) ? _num / u : _num;
         BigInt fden = (u != 0) ? _den / u : _den;
-
-        // return fraction(fnum, fden);
+        _num = fnum;
+        _den = fden;
     }
 
     std::string print()
