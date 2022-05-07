@@ -83,7 +83,7 @@ unsigned int get_oeis_db_size(const std::string &path)
     return oeis_db_size;
 }
 
-bool load_oeis_db(const std::string &path, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+bool load_oeis_db(const std::string &path, fraction<def_t> **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
     unsigned int i = 0;
     std::ifstream input(path);
@@ -100,12 +100,12 @@ bool load_oeis_db(const std::string &path, fraction **oeis_values, unsigned int 
         *(oeis_keys + i) = std::stoi(out[0].substr(1));
         tokenize(out[1], ',', out);
         size_t s = out.size();
-        *(oeis_values + i) = new fraction[s + 1];
+        *(oeis_values + i) = new fraction<def_t>[s + 1];
         fraction sf((unsigned int)s);
         *(*(oeis_values + i) + 0) = sf;
 
         for (unsigned int e = 0; e < s; e++)
-            *(*(oeis_values + i) + (e + 1)) = fraction(out[e]);
+            *(*(oeis_values + i) + (e + 1)) = fraction<def_t>(out[e]);
         i++;
     }
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
     std::cout << "Loading db..." << std::endl;
     unsigned int oeis_db_size = get_oeis_db_size(path);
-    fraction **oeis_values = new fraction *[oeis_db_size];
+    fraction<def_t> **oeis_values = new fraction<def_t> *[oeis_db_size];
     unsigned int *oeis_keys = new unsigned int[oeis_db_size];
     if (!load_oeis_db(path, oeis_values, oeis_keys, oeis_db_size))
         return -1;
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     std::cout << "Loaded in " << time_taken << " ms" << std::endl;
 
     unsigned int sequence_length = 10;
-    fraction *t = new fraction[sequence_length + 1];
+    fraction<def_t> *t = new fraction<def_t>[sequence_length + 1];
     *(t + 0) = fraction(sequence_length);
     *(t + 1) = fraction(1234 + 456 * 2);
     *(t + 2) = fraction(1234 + 456 * 3);

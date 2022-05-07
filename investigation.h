@@ -6,9 +6,9 @@
 
 #include "transform.h"
 
-typedef std::vector<std::tuple<unsigned int, std::vector<fraction>>> out_type;
+typedef std::vector<std::tuple<unsigned int, std::vector<fraction<def_t>>>> out_type;
 
-out_type simple_search_test(fraction *t, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+out_type simple_search_test(fraction<def_t> *t, fraction<def_t> **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
     out_type ret;
     for (int indx = 0; indx < oeis_db_size; ++indx)
@@ -159,13 +159,13 @@ out_type simple_search_test(fraction *t, fraction **oeis_values, unsigned int *o
 //    return ret;
 //}
 
-out_type linear(fraction *u, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+out_type linear(fraction<def_t> *u, fraction<def_t> **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
     out_type ret;
     const BigInt u_length = u->num();
     for (unsigned int i = 0; i < oeis_db_size; i++)
     {
-        fraction *o = *(oeis_values + i);
+        fraction<def_t> *o = *(oeis_values + i);
         if (o->num() < u_length)
             continue;
 
@@ -179,7 +179,7 @@ out_type linear(fraction *u, fraction **oeis_values, unsigned int *oeis_keys, co
         }
         if (!br)
         {
-            std::vector<fraction> inner = {m_tmp, *(u + 1) - m_tmp * *(o + 1)};
+            std::vector<fraction<def_t>> inner = {m_tmp, *(u + 1) - m_tmp * *(o + 1)};
             ret.push_back(std::make_tuple(*(oeis_keys + i), inner));
         }
     }
@@ -187,7 +187,7 @@ out_type linear(fraction *u, fraction **oeis_values, unsigned int *oeis_keys, co
     return ret;
 }
 
-out_type linear_shift(fraction *u, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
+out_type linear_shift(fraction<def_t> *u, fraction<def_t> **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size)
 {
     out_type ret;
     const BigInt u_length = u->num();
@@ -195,7 +195,7 @@ out_type linear_shift(fraction *u, fraction **oeis_values, unsigned int *oeis_ke
     {
         for (unsigned int shift = 0; shift < 2; shift++)
         {
-            fraction *o = *(oeis_values + i);
+            fraction<def_t> *o = *(oeis_values + i);
             if (o->num() < u_length + shift)
                 continue;
 
@@ -209,7 +209,7 @@ out_type linear_shift(fraction *u, fraction **oeis_values, unsigned int *oeis_ke
             }
             if (!br)
             {
-                std::vector<fraction> inner = {shift, m_tmp, *(u + 1) - m_tmp * *(o + 1 + shift)};
+                std::vector<fraction<def_t>> inner = {shift, m_tmp, *(u + 1) - m_tmp * *(o + 1 + shift)};
                 ret.push_back(std::make_tuple(*(oeis_keys + i), inner));
             }
         }
@@ -224,7 +224,7 @@ void print(out_type &v, const std::string &title = "")
     for (unsigned int i = 0; i < v.size(); i++)
     {
         std::cout << title << " " << std::get<0>(v[i]) << " ";
-        std::vector<fraction> one = std::get<1>(v[i]);
+        std::vector<fraction<def_t>> one = std::get<1>(v[i]);
         for (unsigned int j = 0; j < one.size(); j++)
             std::cout << one[j].print() << " ";
         std::cout << std::endl;
@@ -237,7 +237,7 @@ enum tests
     u_plus_d,
 };
 
-void investigation(fraction *u, fraction **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size, std::vector<tests> filter_by_tests = {})
+void investigation(fraction<def_t> *u, fraction<def_t> **oeis_values, unsigned int *oeis_keys, const unsigned int &oeis_db_size, std::vector<tests> filter_by_tests = {})
 {
     std::vector<std::thread> pool;
     // pool.push_back(std::thread([t, oeis_values, oeis_keys, oeis_db_size]()
@@ -276,7 +276,7 @@ void investigation(fraction *u, fraction **oeis_values, unsigned int *oeis_keys,
                                    print(res, "linear_shift");
                                    print_mtx.unlock();
                                    
-                                   fraction*  u_tr = factorial_over_n(u);
+                                   fraction<def_t>*  u_tr = factorial_over_n(u);
                                    res = linear_shift(u_tr, oeis_values, oeis_keys, oeis_db_size);
                                    print_mtx.lock();
                                    std::cout << "linear_shift (factorial_over_n) ended found " << res.size() << " results" << std::endl;
@@ -284,7 +284,7 @@ void investigation(fraction *u, fraction **oeis_values, unsigned int *oeis_keys,
                                    print_mtx.unlock(); }));
     pool.push_back(std::thread([u, oeis_values, oeis_keys, oeis_db_size]()
                                {
-                                   fraction* u_tr = sequence_minus_n(u);
+                                   fraction<def_t>* u_tr = sequence_minus_n(u);
                                    out_type res = linear_shift(u_tr, oeis_values, oeis_keys, oeis_db_size);
                                    print_mtx.lock();
                                    std::cout << "linear_shift (sequence_minus_n) ended found " << res.size() << " results" << std::endl;

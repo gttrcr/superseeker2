@@ -2,12 +2,15 @@
 
 #include "BigInt.hpp"
 
+typedef BigInt def_t;
+
+template <typename T = def_t>
 class fraction
 {
 private:
-    BigInt _num, _den;
+    T _num, _den;
 
-    BigInt gcd(BigInt num1, BigInt num2)
+    T gcd(T num1, T num2)
     {
         BigInt ret;
         for (int i = 1; i <= num1 && i <= num2; i++)
@@ -21,7 +24,7 @@ private:
         return ret;
     }
 
-    BigInt gcd()
+    T gcd()
     {
         return gcd(_num, _den);
     }
@@ -29,24 +32,30 @@ private:
 public:
     fraction() = default;
 
+    fraction(def_t n, def_t d = 1)
+    {
+        _num = n;
+        _den = d;
+    }
+
     fraction(unsigned int n, unsigned int d = 1)
     {
         _num = n;
         _den = d;
     }
 
-    fraction(BigInt n, BigInt d = 1)
+    fraction(const std::string n, const std::string d = "1")
     {
         _num = n;
         _den = d;
     }
 
-    BigInt num() const
+    T num() const
     {
         return _num;
     }
 
-    BigInt den() const
+    T den() const
     {
         return _den;
     }
@@ -74,9 +83,9 @@ public:
 
     void simplify()
     {
-        BigInt u = gcd();
-        BigInt fnum = (u != 0) ? _num / u : _num;
-        BigInt fden = (u != 0) ? _den / u : _den;
+        T u = gcd();
+        T fnum = (u != 0) ? _num / u : _num;
+        T fden = (u != 0) ? _den / u : _den;
         _num = fnum;
         _den = fden;
     }
@@ -88,7 +97,8 @@ public:
     }
 };
 
-bool operator==(const fraction &lhs, const fraction &rhs)
+template <typename T = def_t>
+bool operator==(const fraction<T> &lhs, const fraction<T> &rhs)
 {
     fraction lhs_c(lhs);
     fraction rhs_c(rhs);
@@ -97,22 +107,26 @@ bool operator==(const fraction &lhs, const fraction &rhs)
     return lhs_c.num() == rhs_c.num() && lhs_c.den() == rhs_c.den();
 }
 
-bool operator!=(const fraction &lhs, const fraction &rhs)
+template <typename T = def_t>
+bool operator!=(const fraction<T> &lhs, const fraction<T> &rhs)
 {
     return !(lhs == rhs);
 }
 
-fraction operator-(fraction f1, const fraction &f2)
+template <typename T = def_t>
+fraction<T> operator-(fraction<T> f1, const fraction<T> &f2)
 {
     return f1 -= f2;
 }
 
-fraction operator*(fraction lhs, const fraction &rhs)
+template <typename T = def_t>
+fraction<T> operator*(fraction<T> lhs, const fraction<T> &rhs)
 {
     return lhs *= rhs;
 }
 
-fraction operator/(fraction lhs, const fraction &rhs)
+template <typename T = def_t>
+fraction<T> operator/(fraction<T> lhs, const fraction<T> &rhs)
 {
     return lhs /= rhs;
 }

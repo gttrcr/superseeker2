@@ -1,39 +1,39 @@
 #pragma once
 
-BigInt factorial(const BigInt &big)
+def_t factorial(const def_t &big)
 {
-    BigInt ret = 1;
-    for (BigInt i = 2; i <= big; i++)
+    def_t ret = 1;
+    for (def_t i = 2; i <= big; i++)
         ret *= i;
     return ret;
 }
 
-fraction *factorial_over_n(fraction *u)
+fraction<def_t> *factorial_over_n(fraction<def_t> *u)
 {
-    const BigInt u_length = u->num();
-    fraction *ret = new fraction[u_length.to_int() + 1];
+    const def_t u_length = u->num();
+    fraction<def_t> *ret = new fraction<def_t>[u_length.to_int() + 1];
     *(ret + 0) = *(u + 0);
     for (unsigned int i = 1; i <= u_length; i++)
-        *(ret + i) = (*(u + i)) / factorial(i);
+        *(ret + i) = (*(u + i)) / fraction<def_t>(factorial(i));
     return ret;
 }
 
-fraction *sequence_minus_n(fraction *u)
+fraction<def_t> *sequence_minus_n(fraction<def_t> *u)
 {
-    const BigInt u_length = u->num();
-    fraction *ret = new fraction[u_length.to_int() + 1];
+    const def_t u_length = u->num();
+    fraction<def_t> *ret = new fraction<def_t>[u_length.to_int() + 1];
     *(ret + 0) = *(u + 0);
     for (unsigned int i = 1; i <= u_length; i++)
-        *(ret + i) = (*(u + i)) - i;
+        *(ret + i) = (*(u + i)) - fraction<def_t>(i);
     return ret;
 }
 
-fraction *sequence_minus_factorial_n(fraction *u)
+fraction<def_t> *sequence_minus_factorial_n(fraction<def_t> *u)
 {
-    const BigInt u_length = u->num();
-    fraction *ret = new fraction[u_length.to_int() + 1];
+    const def_t u_length = u->num();
+    fraction<def_t> *ret = new fraction<def_t>[u_length.to_int() + 1];
     *(ret + 0) = *(u + 0);
     for (unsigned int i = 1; i <= u_length; i++)
-        *(ret + i) = (*(u + i)) - factorial(i);
+        *(ret + i) = (*(u + i)) - fraction<def_t>(factorial(i));
     return ret;
 }
