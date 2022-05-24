@@ -11,7 +11,7 @@ def_t factorial(const def_t &big)
 fraction<def_t> *factorial_over_n(fraction<def_t> *u)
 {
     const def_t u_length = u->num();
-    fraction<def_t> *ret = new fraction<def_t>[u_length.to_int() + 1];
+    fraction<def_t> *ret = new fraction<def_t>[u_length + 1];
     *(ret + 0) = *(u + 0);
     for (unsigned int i = 1; i <= u_length; i++)
         *(ret + i) = (*(u + i)) / fraction<def_t>(factorial(i));
@@ -21,7 +21,7 @@ fraction<def_t> *factorial_over_n(fraction<def_t> *u)
 fraction<def_t> *sequence_minus_n(fraction<def_t> *u)
 {
     const def_t u_length = u->num();
-    fraction<def_t> *ret = new fraction<def_t>[u_length.to_int() + 1];
+    fraction<def_t> *ret = new fraction<def_t>[u_length + 1];
     *(ret + 0) = *(u + 0);
     for (unsigned int i = 1; i <= u_length; i++)
         *(ret + i) = (*(u + i)) - fraction<def_t>(i);
@@ -31,7 +31,7 @@ fraction<def_t> *sequence_minus_n(fraction<def_t> *u)
 fraction<def_t> *sequence_minus_factorial_n(fraction<def_t> *u)
 {
     const def_t u_length = u->num();
-    fraction<def_t> *ret = new fraction<def_t>[u_length.to_int() + 1];
+    fraction<def_t> *ret = new fraction<def_t>[u_length + 1];
     *(ret + 0) = *(u + 0);
     for (unsigned int i = 1; i <= u_length; i++)
         *(ret + i) = (*(u + i)) - fraction<def_t>(factorial(i));

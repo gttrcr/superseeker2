@@ -101,11 +101,19 @@ bool load_oeis_db(const std::string &path, fraction<def_t> **oeis_values, unsign
         tokenize(out[1], ',', out);
         size_t s = out.size();
         *(oeis_values + i) = new fraction<def_t>[s + 1];
-        fraction sf((unsigned int)s);
+        fraction sf(s);
         *(*(oeis_values + i) + 0) = sf;
 
-        for (unsigned int e = 0; e < s; e++)
-            *(*(oeis_values + i) + (e + 1)) = fraction<def_t>(out[e]);
+        try
+        {
+            for (unsigned int e = 0; e < s; e++)
+                *(*(oeis_values + i) + (e + 1)) = fraction<def_t>(out[e]);
+        }
+        catch (const std::exception &e)
+        {
+            std::cout << "Error converting sequence " << *(oeis_keys + i) << std::endl;
+        }
+        
         i++;
     }
 

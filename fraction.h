@@ -2,7 +2,7 @@
 
 #include "BigInt.hpp"
 
-typedef BigInt def_t;
+typedef unsigned long long int def_t;
 
 template <typename T = def_t>
 class fraction
@@ -12,7 +12,7 @@ private:
 
     T gcd(T num1, T num2)
     {
-        BigInt ret;
+        def_t ret;
         for (int i = 1; i <= num1 && i <= num2; i++)
         {
             if (num1 % i == 0 && num2 % i == 0)
@@ -38,16 +38,16 @@ public:
         _den = d;
     }
 
-    fraction(unsigned int n, unsigned int d = 1)
-    {
-        _num = n;
-        _den = d;
-    }
+    //fraction(int n, int d = 1)
+    //{
+    //    _num = n;
+    //    _den = d;
+    //}
 
     fraction(const std::string n, const std::string d = "1")
     {
-        _num = n;
-        _den = d;
+        _num = std::stoull(n);
+        _den = std::stoull(d);
     }
 
     T num() const
@@ -93,7 +93,7 @@ public:
     std::string print()
     {
         simplify();
-        return _num.to_string() + (_den == 1 ? "" : "/" + _den.to_string());
+        return _num + (_den == 1 ? "" : "/" + _den);
     }
 };
 
