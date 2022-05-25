@@ -1,8 +1,7 @@
 #pragma once
 
-#include "BigInt.hpp"
-
-typedef unsigned long long int def_t;
+#define CONV std::stoll
+typedef long long int def_t;
 
 template <typename T = def_t>
 class fraction
@@ -12,14 +11,16 @@ private:
 
     T gcd(T num1, T num2)
     {
+        num1 = num1 < 0 ? -num1 : num1;
+        num2 = num2 < 0 ? -num2 : num2;
+
+        if (num2 == 1)
+            return std::min(num1, num2);
+
         def_t ret;
-        for (int i = 1; i <= num1 && i <= num2; i++)
-        {
+        for (def_t i = 1; i <= num1 && i <= num2; i++)
             if (num1 % i == 0 && num2 % i == 0)
-            {
                 ret = i;
-            }
-        }
 
         return ret;
     }
@@ -38,16 +39,10 @@ public:
         _den = d;
     }
 
-    //fraction(int n, int d = 1)
-    //{
-    //    _num = n;
-    //    _den = d;
-    //}
-
     fraction(const std::string n, const std::string d = "1")
     {
-        _num = std::stoull(n);
-        _den = std::stoull(d);
+        _num = CONV(n);
+        _den = CONV(d);
     }
 
     T num() const
@@ -92,8 +87,9 @@ public:
 
     std::string print()
     {
-        simplify();
-        return _num + (_den == 1 ? "" : "/" + _den);
+        fraction<T> f(_num, _den);
+        f.simplify();
+        return f.num() == 0 ? "0" : (std::to_string(f.num()) + (f.den() == 1 ? "" : "/" + std::to_string(f.den())));
     }
 };
 

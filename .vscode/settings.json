@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "numeric": "cpp",
         "cctype": "cpp",
         "clocale": "cpp",
         "cmath": "cpp",
@@ -8,7 +7,6 @@
         "cstddef": "cpp",
         "cstdio": "cpp",
         "cstdlib": "cpp",
-        "cstring": "cpp",
         "ctime": "cpp",
         "cwchar": "cpp",
         "cwctype": "cpp",
@@ -16,7 +14,6 @@
         "atomic": "cpp",
         "bit": "cpp",
         "*.tcc": "cpp",
-        "bitset": "cpp",
         "chrono": "cpp",
         "compare": "cpp",
         "concepts": "cpp",
@@ -24,7 +21,6 @@
         "cstdint": "cpp",
         "deque": "cpp",
         "map": "cpp",
-        "set": "cpp",
         "string": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
@@ -34,19 +30,16 @@
         "iterator": "cpp",
         "memory": "cpp",
         "memory_resource": "cpp",
-        "optional": "cpp",
+        "numeric": "cpp",
         "random": "cpp",
         "ratio": "cpp",
-        "regex": "cpp",
         "string_view": "cpp",
         "system_error": "cpp",
         "tuple": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
         "fstream": "cpp",
-        "future": "cpp",
         "initializer_list": "cpp",
-        "iomanip": "cpp",
         "iosfwd": "cpp",
         "iostream": "cpp",
         "istream": "cpp",
@@ -62,7 +55,6 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp",
-        "variant": "cpp"
+        "typeinfo": "cpp"
     }
 }
