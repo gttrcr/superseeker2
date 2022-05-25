@@ -6,22 +6,12 @@
 #include <vector>
 #include <sstream>
 #include <chrono>
-
-#if defined(__linux__)
 #include <stdio.h>
 #include <curl/curl.h>
 #include <string>
-
-size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-    size_t written = fwrite(ptr, size, nmemb, stream);
-    return written;
-}
-#elif defined(__WIN32__)
-#include <windows.h>
-#include <urlmon.h>
-// TODO
-#endif
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
 #include "fraction.h"
 #include "investigation.h"
@@ -34,36 +24,45 @@ inline bool oeis_db_exists(const std::string &path)
 
 inline bool download_oeis_db(const std::string &path)
 {
-    std::string dwnld_url = "http://oeis.org/stripped.gz";
-    std::string savepath = "stripped.gz";
-#if defined(__linux__)
+    std::cout << "downloading oeis db..." << std::endl;
     CURL *curl;
     FILE *fp;
     CURLcode res;
+    std::string url = "http://oeis.org/stripped.gz";
+    char outfilename[FILENAME_MAX] = "stripped.gz";
+    char decompress[FILENAME_MAX] = "stripped";
     curl = curl_easy_init();
     if (curl)
     {
-        fp = fopen(savepath.c_str(), "wb");
-        curl_easy_setopt(curl, CURLOPT_URL, dwnld_url);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+        fp = fopen(outfilename, "wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
         res = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         fclose(fp);
     }
-    
-    return true;
-#elif defined(__WIN32__)
-    TCHAR *t_dwnld_url = new TCHAR[dwnld_url.size() + 1];
-    t_dwnld_url[dwnld_url.size()] = 0;
-    std::copy(dwnld_url.begin(), dwnld_url.end(), t_dwnld_url);
-    TCHAR *t_savepath = new TCHAR[savepath.size() + 1];
-    t_savepath[savepath.size()] = 0;
-    std::copy(savepath.begin(), savepath.end(), t_savepath);
-    URLDownloadToFile(NULL, t_dwnld_url, t_savepath, 0, NULL);
+
+    if (res != CURLE_OK)
+    {
+        std::cout << "error downloading oeis db " << res << std::endl;
+        return false;
+    }
+
+    std::cout << "download completed" << std::endl;
+
+    std::cout << "decompressing oeis db..." << std::endl;
+    std::ifstream file(outfilename, std::ios_base::in | std::ios_base::binary);
+    boost::iostreams::filtering_streambuf<boost::iostreams::input> inbuf;
+    inbuf.push(boost::iostreams::gzip_decompressor());
+    inbuf.push(file);
+    std::istream instream(&inbuf);
+    std::ofstream f(path);
+    f << instream.rdbuf();
+    file.close();
+    f.close();
 
     return true;
-#endif
 }
 
 bool oeis_db(const std::string &path)
@@ -71,14 +70,7 @@ bool oeis_db(const std::string &path)
     if (!oeis_db_exists(path))
     {
         std::cout << "oeis db does not exists in " << path << std::endl;
-        std::cout << "downloading oeis db..." << std::endl;
-        if (!download_oeis_db(path))
-        {
-            std::cout << "error downloading oeis db" << std::endl;
-            return false;
-        }
-        else
-            std::cout << "download completed" << std::endl;
+        return download_oeis_db(path);
     }
     else
     {
@@ -87,16 +79,7 @@ bool oeis_db(const std::string &path)
         std::string choice;
         std::cin >> choice;
         if (choice == "y" || choice == "Y")
-        {
-            std::cout << "downloading oeis db..." << std::endl;
-            if (!download_oeis_db(path))
-            {
-                std::cout << "error downloading oeis db" << std::endl;
-                return false;
-            }
-            else
-                std::cout << "download completed" << std::endl;
-        }
+            return download_oeis_db(path);
     }
 
     return true;
@@ -158,11 +141,10 @@ bool load_oeis_db(const std::string &path, fraction<def_t> **oeis_values, unsign
         {
             ko += (s - max_convertible_size);
             ok += s;
-            // std::cout << "Error converting sequence " << *(oeis_keys + i) << " " << e << "/" << s << std::endl;
         }
 
         *(oeis_values + i) = new fraction<def_t>[max_convertible_size + 1];
-        fraction sf(max_convertible_size);
+        fraction<def_t> sf(max_convertible_size);
         *(*(oeis_values + i) + 0) = sf;
 
         for (unsigned int k = 0; k < max_convertible_size; k++)
@@ -199,17 +181,17 @@ int main(int argc, char **argv)
 
     unsigned int sequence_length = 10;
     fraction<def_t> *t = new fraction<def_t>[sequence_length + 1];
-    *(t + 0) = fraction(sequence_length);
-    *(t + 1) = fraction(1234 + 2);
-    *(t + 2) = fraction(1234 + 3);
-    *(t + 3) = fraction(1234 + 5);
-    *(t + 4) = fraction(1234 + 7);
-    *(t + 5) = fraction(1234 + 11);
-    *(t + 6) = fraction(1234 + 13);
-    *(t + 7) = fraction(1234 + 17);
-    *(t + 8) = fraction(1234 + 19);
-    *(t + 9) = fraction(1234 + 23);
-    *(t + 10) = fraction(1234 + 29);
+    *(t + 0) = fraction<def_t>(sequence_length);
+    *(t + 1) = fraction<def_t>(1234 + 2);
+    *(t + 2) = fraction<def_t>(1234 + 3);
+    *(t + 3) = fraction<def_t>(1234 + 5);
+    *(t + 4) = fraction<def_t>(1234 + 7);
+    *(t + 5) = fraction<def_t>(1234 + 11);
+    *(t + 6) = fraction<def_t>(1234 + 13);
+    *(t + 7) = fraction<def_t>(1234 + 17);
+    *(t + 8) = fraction<def_t>(1234 + 19);
+    *(t + 9) = fraction<def_t>(1234 + 23);
+    *(t + 10) = fraction<def_t>(1234 + 29);
 
     // fix constant sequence
     //*(t + 1) = fraction(1234);

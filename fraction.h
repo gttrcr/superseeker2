@@ -96,8 +96,8 @@ public:
 template <typename T = def_t>
 bool operator==(const fraction<T> &lhs, const fraction<T> &rhs)
 {
-    fraction lhs_c(lhs);
-    fraction rhs_c(rhs);
+    fraction<T> lhs_c(lhs);
+    fraction<T> rhs_c(rhs);
     lhs_c.simplify();
     rhs_c.simplify();
     return lhs_c.num() == rhs_c.num() && lhs_c.den() == rhs_c.den();

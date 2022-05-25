@@ -38,13 +38,13 @@ out_type linear_shift(fraction<def_t> *u, fraction<def_t> **oeis_values, unsigne
                 continue;
 
             bool br = false;
-            fraction m_tmp = (*(u + 2) - *(u + 1)) / (*(o + 2 + shift) - *(o + 1 + shift));
+            fraction<def_t> m_tmp = (*(u + 2) - *(u + 1)) / (*(o + 2 + shift) - *(o + 1 + shift));
             if (m_tmp.den() == 0)
                 continue;
 
             for (unsigned int n = 3; n <= u_length && !br; n++)
             {
-                fraction m = (*(u + n) - *(u + 1)) / (*(o + n + shift) - *(o + 1 + shift));
+                fraction<def_t> m = (*(u + n) - *(u + 1)) / (*(o + n + shift) - *(o + 1 + shift));
                 if (m_tmp != m)
                     br = true;
             }
