@@ -18,6 +18,8 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
     return written;
 }
 #elif defined(__WIN32__)
+#include <windows.h>
+#include <urlmon.h>
 // TODO
 #endif
 
@@ -32,8 +34,8 @@ inline bool oeis_db_exists(const std::string &path)
 
 inline bool download_oeis_db(const std::string &path)
 {
-    std::string dwnld_url = "http://www.url.com/downloadpage/filename.txt";
-    std::string savepath = "stripped";
+    std::string dwnld_url = "http://oeis.org/stripped.gz";
+    std::string savepath = "stripped.gz";
 #if defined(__linux__)
     CURL *curl;
     FILE *fp;
@@ -49,9 +51,18 @@ inline bool download_oeis_db(const std::string &path)
         curl_easy_cleanup(curl);
         fclose(fp);
     }
+    
     return true;
 #elif defined(__WIN32__)
-    URLDownloadToFile(NULL, dwnld_url.c_str(), savepath.c_str(), 0, NULL);
+    TCHAR *t_dwnld_url = new TCHAR[dwnld_url.size() + 1];
+    t_dwnld_url[dwnld_url.size()] = 0;
+    std::copy(dwnld_url.begin(), dwnld_url.end(), t_dwnld_url);
+    TCHAR *t_savepath = new TCHAR[savepath.size() + 1];
+    t_savepath[savepath.size()] = 0;
+    std::copy(savepath.begin(), savepath.end(), t_savepath);
+    URLDownloadToFile(NULL, t_dwnld_url, t_savepath, 0, NULL);
+
+    return true;
 #endif
 }
 
