@@ -72,15 +72,15 @@ bool oeis_db(const std::string &path)
         std::cout << "oeis db does not exists in " << path << std::endl;
         return download_oeis_db(path);
     }
-    else
-    {
-        std::cout << "oeis db already exists but it may be out of date" << std::endl;
-        std::cout << "download oeis db anyway? [yY/nN]" << std::endl;
-        std::string choice;
-        std::cin >> choice;
-        if (choice == "y" || choice == "Y")
-            return download_oeis_db(path);
-    }
+    // else
+    //{
+    //     std::cout << "oeis db already exists but it may be out of date" << std::endl;
+    //     std::cout << "download oeis db anyway? [yY/nN]" << std::endl;
+    //     std::string choice;
+    //     std::cin >> choice;
+    //     if (choice == "y" || choice == "Y")
+    //         return download_oeis_db(path);
+    // }
 
     return true;
 }
@@ -118,13 +118,15 @@ bool load_oeis_db(const std::string &path, fraction<def_t> **oeis_values, unsign
     unsigned int ko = 0;
     std::ifstream input(path);
     std::vector<std::string> out;
+    progress prog;
+    prog.set_name("load");
     for (std::string line; getline(input, line);)
     {
         if (line[0] == '#')
             continue;
 
         if (i % 10000 == 0)
-            std::cout << (float)i * 100.0 / oeis_db_size << "%" << std::endl;
+            prog.set_value("load", (float)i * 100.0 / oeis_db_size);
 
         tokenize(line, ' ', out);
         *(oeis_keys + i) = std::stoi(out[0].substr(1));
@@ -143,9 +145,7 @@ bool load_oeis_db(const std::string &path, fraction<def_t> **oeis_values, unsign
             ok += s;
         }
 
-        *(oeis_values + i) = new fraction<def_t>[max_convertible_size + 1];
-        fraction<def_t> sf(max_convertible_size);
-        *(*(oeis_values + i) + 0) = sf;
+        *(oeis_values + i) = create_sequence<def_t>(max_convertible_size);
 
         for (unsigned int k = 0; k < max_convertible_size; k++)
             *(*(oeis_values + i) + (k + 1)) = fraction<def_t>(out[k]);
@@ -153,7 +153,7 @@ bool load_oeis_db(const std::string &path, fraction<def_t> **oeis_values, unsign
         i++;
     }
 
-    std::cout << "Errors " << (float)ko / (float)ok * 100.0 << std::endl;
+    // std::cout << "Errors " << (float)ko / (float)ok * 100.0 << std::endl;
     input.close();
 
     return true;
@@ -180,8 +180,7 @@ int main(int argc, char **argv)
     std::cout << "Loaded in " << time_taken << " ms" << std::endl;
 
     unsigned int sequence_length = 10;
-    fraction<def_t> *t = new fraction<def_t>[sequence_length + 1];
-    *(t + 0) = fraction<def_t>(sequence_length);
+    fraction<def_t> *t = create_sequence<def_t>(sequence_length);
     *(t + 1) = fraction<def_t>(1234 + 2);
     *(t + 2) = fraction<def_t>(1234 + 3);
     *(t + 3) = fraction<def_t>(1234 + 5);

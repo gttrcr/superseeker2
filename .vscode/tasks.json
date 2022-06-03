@@ -9,7 +9,7 @@
                 //"-g",
                 "${file}",
                 "-o",
-                "main",
+                "${workspaceFolderBasename}",
                 "-std=c++17",
                 "-lcurl",
                 "-lpthread",

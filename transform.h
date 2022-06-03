@@ -14,7 +14,7 @@ fraction<def_t> *factorial_over_n(fraction<def_t> *u)
     fraction<def_t> *ret = new fraction<def_t>[u_length + 1];
     *(ret + 0) = *(u + 0);
     for (unsigned int i = 1; i <= u_length; i++)
-        *(ret + i) = (*(u + i)) / fraction<def_t>(factorial(i));
+        *(ret + i) = (*(u + i)) / factorial(i);
     return ret;
 }
 

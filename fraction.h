@@ -1,28 +1,20 @@
 #pragma once
 
-#define CONV std::stoll
 typedef long long int def_t;
+#define CONV_FUNC std::stoll
 
-template <typename T = def_t>
+template <typename T>
 class fraction
 {
 private:
     T _num, _den;
 
-    T gcd(T num1, T num2)
+    T gcd(T a, T b)
     {
-        num1 = num1 < 0 ? -num1 : num1;
-        num2 = num2 < 0 ? -num2 : num2;
-
-        if (num2 == 1)
-            return std::min(num1, num2);
-
-        def_t ret;
-        for (def_t i = 1; i <= num1 && i <= num2; i++)
-            if (num1 % i == 0 && num2 % i == 0)
-                ret = i;
-
-        return ret;
+        if (b == 0)
+            return a;
+        else
+            return gcd(b, a % b);
     }
 
     T gcd()
@@ -33,7 +25,7 @@ private:
 public:
     fraction() = default;
 
-    fraction(def_t n, def_t d = 1)
+    fraction(T n, T d = 1)
     {
         _num = n;
         _den = d;
@@ -41,8 +33,8 @@ public:
 
     fraction(const std::string n, const std::string d = "1")
     {
-        _num = CONV(n);
-        _den = CONV(d);
+        _num = CONV_FUNC(n);
+        _den = CONV_FUNC(d);
     }
 
     T num() const
@@ -66,6 +58,19 @@ public:
     {
         _den = _den * rhs._num;
         _num = _num * rhs._den;
+        return *this;
+    }
+
+    fraction &operator/=(const T &rhs)
+    {
+        _den = _den * rhs;
+        return *this;
+    }
+
+    fraction &operator+=(fraction const &rhs)
+    {
+        _num = _num * rhs._den + rhs._num * _den;
+        _den = _den * rhs._den;
         return *this;
     }
 
@@ -93,7 +98,7 @@ public:
     }
 };
 
-template <typename T = def_t>
+template <typename T>
 bool operator==(const fraction<T> &lhs, const fraction<T> &rhs)
 {
     fraction<T> lhs_c(lhs);
@@ -103,26 +108,53 @@ bool operator==(const fraction<T> &lhs, const fraction<T> &rhs)
     return lhs_c.num() == rhs_c.num() && lhs_c.den() == rhs_c.den();
 }
 
-template <typename T = def_t>
+template <typename T>
 bool operator!=(const fraction<T> &lhs, const fraction<T> &rhs)
 {
     return !(lhs == rhs);
 }
 
-template <typename T = def_t>
-fraction<T> operator-(fraction<T> f1, const fraction<T> &f2)
+template <typename T>
+fraction<T> operator-(fraction<T> lhs, const fraction<T> &rhs)
 {
-    return f1 -= f2;
+    return lhs -= rhs;
 }
 
-template <typename T = def_t>
+template <typename T>
+fraction<T> operator+(fraction<T> lhs, const fraction<T> &rhs)
+{
+    return lhs += rhs;
+}
+
+template <typename T>
 fraction<T> operator*(fraction<T> lhs, const fraction<T> &rhs)
 {
     return lhs *= rhs;
 }
 
-template <typename T = def_t>
+template <typename T>
 fraction<T> operator/(fraction<T> lhs, const fraction<T> &rhs)
 {
     return lhs /= rhs;
+}
+
+template <typename T>
+fraction<T> operator/(fraction<T> lhs, const T &rhs)
+{
+    return lhs /= rhs;
+}
+
+template <typename T>
+fraction<T> *create_sequence(const unsigned int len)
+{
+    fraction<T> *s = new fraction<T>[len + 1];
+    *(s + 0) = len;
+    return s;
+}
+
+template <typename T>
+void destroy_sequence(fraction<T> *s)
+{
+    delete s;
+    //s = NULL;
 }
